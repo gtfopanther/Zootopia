@@ -6,25 +6,42 @@ def load_data(file_path):
     with open(file_path, "r") as handle:
         return json.load(handle)
 
+def load_template(file_path):
+    """Loads an HTML template file."""
+    with open(file_path, "r") as handle:
+        return handle.read()
+
+
+def build_animals_info(animals_data):
+    """Builds the string to embed into the HTML template."""
+    output = ""
+    for animal in animals_data:
+        name = animal.get("name")
+        characteristics = animal.get("characteristics", {})
+        diet = characteristics.get("diet")
+        locations = animal.get("locations", [])
+        animal_type = characteristics.get("type")
+
+        if name:
+            output += f"Name: {name}\n"
+        if diet:
+            output += f"Diet: {diet}\n"
+        if locations:
+            output += f"Location: {locations[0]}\n"
+        if animal_type:
+            output += f"Type: {animal_type}\n"
+        output += "\n"
+    return output
+
 
 def main():
     animals_data = load_data("animals_data.json")
+    template = load_template("animals_template.html")
+    animals_info = build_animals_info(animals_data)
 
-    for animal in animals_data:
-        name = animal.get("name")
-        diet = animal.get("diet")
-        locations = animal.get("locations", [])
-        animal_type = animal.get("type")
-
-        if name:
-            print(f"Name: {name}")
-        if diet:
-            print(f"Diet: {diet}")
-        if locations:
-            print(f"Location: {locations[0]}")
-        if animal_type:
-            print(f"Type: {animal_type}")
-        print()
+    html_content = template.replace("__REPLACE_ANIMALS_INFO__", animals_info)
+    with open("animals.html", "w") as handle:
+        handle.write(html_content)
 
 
 if __name__ == "__main__":
