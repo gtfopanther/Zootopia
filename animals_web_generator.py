@@ -22,15 +22,16 @@ def build_animals_info(animals_data):
         locations = animal.get("locations", [])
         animal_type = characteristics.get("type")
 
+        output += '<li class="cards__item">'
         if name:
-            output += f"Name: {name}\n"
+            output += f"Name: {name}<br/>\n"
         if diet:
-            output += f"Diet: {diet}\n"
+            output += f"Diet: {diet}<br/>\n"
         if locations:
-            output += f"Location: {locations[0]}\n"
+            output += f"Location: {locations[0]}<br/>\n"
         if animal_type:
-            output += f"Type: {animal_type}\n"
-        output += "\n"
+            output += f"Type: {animal_type}<br/>\n"
+        output += "</li>\n"
     return output
 
 
