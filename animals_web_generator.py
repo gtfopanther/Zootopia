@@ -1,4 +1,5 @@
 import json
+import data_fetcher
 
 
 def load_data(file_path):
@@ -6,10 +7,12 @@ def load_data(file_path):
     with open(file_path, "r") as handle:
         return json.load(handle)
 
+
 def load_template(file_path):
     """Loads an HTML template file."""
     with open(file_path, "r") as handle:
         return handle.read()
+
 
 def get_skin_types(animals_data):
     """Collects sorted unique skin types from the data."""
@@ -44,16 +47,16 @@ def serialize_animal(animal):
     output += '  <div class="card__text">\n'
     output += '    <ul class="card__list">\n'
     if diet:
-        output += f"      <li class=\"card__list-item\"><strong>Diet:</strong> {diet}</li>\n"
+        output += f'      <li class="card__list-item"><strong>Diet:</strong> {diet}</li>\n'
     if locations:
         output += (
-            f"      <li class=\"card__list-item\"><strong>Location:</strong> "
-            f"{locations[0]}</li>\n"
+            f'      <li class="card__list-item"><strong>Location:</strong> '
+            f'{locations[0]}</li>\n'
         )
     if animal_type:
         output += (
-            f"      <li class=\"card__list-item\"><strong>Type:</strong> "
-            f"{animal_type}</li>\n"
+            f'      <li class="card__list-item"><strong>Type:</strong> '
+            f'{animal_type}</li>\n'
         )
     output += "    </ul>\n"
     output += "  </div>\n"
@@ -61,26 +64,38 @@ def serialize_animal(animal):
     return output
 
 
+def build_not_found_message(animal_name: str):
+    safe_name = (animal_name or "").replace('"', "&quot;")
+    return (
+        '<div class="message-card">\n'
+        f'  <h2>The animal "{safe_name}" doesn\'t exist.</h2>\n'
+        "  <p>Try another name (e.g., Fox, Monkey, Tiger).</p>\n"
+        "</div>\n"
+    )
+
+
 def main():
-    animals_data = load_data("animals_data.json")
-    skin_types = get_skin_types(animals_data)
-    if skin_types:
-        print("Available skin types:")
-        for skin_type in skin_types:
-            print(f"- {skin_type}")
-        selected_skin_type = input("Choose a skin type: ").strip()
-        if selected_skin_type:
-            animals_data = [
-                animal
-                for animal in animals_data
-                if animal.get("characteristics", {}).get("skin_type") == selected_skin_type
-            ]
+    animal_name = input("Please enter an animal: ").strip()
+
+    try:
+        animals_data = data_fetcher.fetch_data(animal_name)
+    except Exception as e:
+        animals_data = []
+        print(f"Failed to fetch data: {e}")
+
     template = load_template("animals_template.html")
-    animals_info = build_animals_info(animals_data)
+
+    if not animals_data:
+        animals_info = build_not_found_message(animal_name)
+    else:
+        animals_info = build_animals_info(animals_data)
 
     html_content = template.replace("__REPLACE_ANIMALS_INFO__", animals_info)
+
     with open("animals.html", "w") as handle:
         handle.write(html_content)
+
+    print("Website was successfully generated to the file animals.html.")
 
 
 if __name__ == "__main__":
